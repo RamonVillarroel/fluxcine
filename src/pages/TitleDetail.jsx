@@ -67,7 +67,7 @@ export default function TitleDetail() {
         type="video.movie"
       />
 
-      <div className="relative w-full" style={{ height: 260 }}>
+      <div className="relative w-full" style={{ height: 350 }}>
         {movie.backdrop_path && (
           <img
             src={backdrop}
@@ -82,7 +82,8 @@ export default function TitleDetail() {
         />
       </div>
 
-      <div className="max-w-5xl mx-auto px-5 md:px-8 pb-20">
+      {/* MODIFICATION PRINCIPALE ICI : w-full au lieu de max-w-5xl */}
+      <div className="w-full px-5 md:px-12 pb-20">
         <Link
           to="/"
           className="inline-flex items-center gap-1.5 text-label-3 hover:text-label-2 text-xs font-medium mb-6 mt-4 transition-colors"
@@ -171,7 +172,6 @@ export default function TitleDetail() {
               </section>
             )}
 
-            {/* --- SECTION LECTEUR VIDÉO CORRIGÉE --- */}
             <section id="player" className="scroll-mt-20">
               <SectionTitle>Lecteur Streaming</SectionTitle>
               <VideoPlayer 
