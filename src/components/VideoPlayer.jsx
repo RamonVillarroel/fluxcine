@@ -3,33 +3,31 @@ import React, { useState } from 'react';
 export default function VideoPlayer({ tmdbId, type = 'movie', season = 1, episode = 1 }) {
   const servers = [
     {
+      id: 'vidsrcnet',
+      label: '🌍 Serveur 1 (Vidsrc - VOSTFR)',
+      // Ajout de &lang=fr pour tenter de forcer les sous-titres FR
+      url: type === 'movie' 
+        ? `https://vidsrc.net/embed/movie?tmdb=${tmdbId}&lang=fr` 
+        : `https://vidsrc.net/embed/tv?tmdb=${tmdbId}&season=${season}&episode=${episode}&lang=fr`
+    },
+    {
+      id: 'smashy',
+      label: '🌍 Serveur 2 (Smashy - Multi-Sous-titres)',
+      // Smashy récupère énormément de sous-titres via OpenSubtitles
+      url: type === 'movie' 
+        ? `https://player.smashy.stream/movie?tmdb=${tmdbId}&lang=fr` 
+        : `https://player.smashy.stream/tv?tmdb=${tmdbId}&s=${season}&e=${episode}&lang=fr`
+    },
+    {
       id: 'multiembed',
-      label: '🌍 Serveur 1 (Stable - Testez les paramètres Audio)',
-      // Tu as confirmé que celui-ci charge bien la vidéo. Il faut chercher la piste VF manuellement.
+      label: '🌍 Serveur 3 (Multiembed - VOSTFR)',
       url: type === 'movie' 
-        ? `https://multiembed.mov/?video_id=${tmdbId}&tmdb=1` 
-        : `https://multiembed.mov/?video_id=${tmdbId}&tmdb=1&s=${season}&e=${episode}`
-    },
-    {
-      id: 'vidsrcpm',
-      label: '🌍 Serveur 2 (Miroir Anti-Blocage A)',
-      // Miroir de Vidsrc qui échappe souvent au blocage DNS français.
-      url: type === 'movie' 
-        ? `https://vidsrc.pm/embed/movie?tmdb=${tmdbId}` 
-        : `https://vidsrc.pm/embed/tv?tmdb=${tmdbId}&season=${season}&episode=${episode}`
-    },
-    {
-      id: 'vidsrcxyz',
-      label: '🌍 Serveur 3 (Miroir Anti-Blocage B)',
-      // Un autre miroir de secours pour Vidsrc.
-      url: type === 'movie' 
-        ? `https://vidsrc.xyz/embed/movie?tmdb=${tmdbId}` 
-        : `https://vidsrc.xyz/embed/tv?tmdb=${tmdbId}&season=${season}&episode=${episode}`
+        ? `https://multiembed.mov/?video_id=${tmdbId}&tmdb=1&lang=fr` 
+        : `https://multiembed.mov/?video_id=${tmdbId}&tmdb=1&s=${season}&e=${episode}&lang=fr`
     },
     {
       id: 'vidlink',
-      label: '🇺🇸 Serveur 4 (Secours 100% Fonctionnel - VO)',
-      // Tu as confirmé que celui-ci marche à chaque coup. Parfait pour dépanner.
+      label: '🇺🇸 Serveur 4 (Vidlink - Rapide)',
       url: type === 'movie' 
         ? `https://vidlink.pro/movie/${tmdbId}?primaryColor=E50914&autoplay=false` 
         : `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}?primaryColor=E50914&autoplay=false`
@@ -73,7 +71,7 @@ export default function VideoPlayer({ tmdbId, type = 'movie', season = 1, episod
         </div>
         
         <div className="text-[10px] text-zinc-400 font-medium whitespace-nowrap bg-zinc-900/50 px-3 py-1.5 rounded-md text-center">
-          ⚠️ Note : Si aucune option "Français" n'est disponible dans les paramètres du lecteur (Audio/CC), c'est que le fichier est uniquement en VO.
+          💡 RAPPEL : Cliquez sur l'icône "CC" en bas à droite du lecteur pour activer les sous-titres FR.
         </div>
       </div>
 
