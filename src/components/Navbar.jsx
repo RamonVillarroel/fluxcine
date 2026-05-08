@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
-import { Link, NavLink } from 'react-router-dom'
-import { Menu, X } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom'
+import { Menu, X, LogIn, LogOut, User } from 'lucide-react'
 import SearchBar from './SearchBar'
+import { useAuth } from '../contexts/AuthContext'
 
 const navLinks = [
   { to: '/', label: 'Accueil' },
@@ -10,8 +11,14 @@ const navLinks = [
 ]
 
 export default function Navbar() {
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
+  const [menuOpen, setMenuOpen]       = useState(false)
+  const [scrolled, setScrolled]       = useState(false)
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const dropdownRef                   = useRef(null)
+
+  const { user, signOut, loading } = useAuth()
+  const navigate                   = useNavigate()
+  const location                   = useLocation()
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 12)
@@ -19,12 +26,32 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', fn)
   }, [])
 
-  // Ferme le menu si resize vers desktop
   useEffect(() => {
     const fn = () => { if (window.innerWidth >= 768) setMenuOpen(false) }
     window.addEventListener('resize', fn)
     return () => window.removeEventListener('resize', fn)
   }, [])
+
+  // Ferme le dropdown au clic extérieur
+  useEffect(() => {
+    const fn = e => { if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setDropdownOpen(false) }
+    document.addEventListener('mousedown', fn)
+    return () => document.removeEventListener('mousedown', fn)
+  }, [])
+
+  const handleSignOut = async () => {
+    setDropdownOpen(false)
+    await signOut()
+    navigate('/')
+  }
+
+  const handleLogin = () => {
+    setMenuOpen(false)
+    navigate('/auth', { state: { from: location.pathname } })
+  }
+
+  // Initiale de l'email pour l'avatar
+  const initial = user?.email?.charAt(0).toUpperCase() || '?'
 
   return (
     <header
@@ -84,6 +111,65 @@ export default function Navbar() {
           <SearchBar />
         </div>
 
+        {/* Auth — desktop */}
+        {!loading && (
+          <div className="hidden md:flex items-center flex-shrink-0">
+            {user ? (
+              /* Avatar + dropdown */
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setDropdownOpen(v => !v)}
+                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl transition-all duration-200 hover:bg-white/[0.05]"
+                  aria-label="Menu utilisateur"
+                >
+                  <div
+                    className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                    style={{ background: 'linear-gradient(135deg,#8b5cf6,#7c3aed)', boxShadow: '0 0 12px rgba(139,92,246,0.4)' }}
+                  >
+                    {initial}
+                  </div>
+                  <span className="text-label-2 text-[12px] max-w-[110px] truncate hidden lg:block">
+                    {user.email}
+                  </span>
+                </button>
+
+                {dropdownOpen && (
+                  <div
+                    className="absolute right-0 top-[calc(100%+8px)] w-56 rounded-2xl p-1.5 z-50"
+                    style={{
+                      background: 'rgba(15,14,26,0.96)',
+                      backdropFilter: 'blur(24px)',
+                      WebkitBackdropFilter: 'blur(24px)',
+                      border: '1px solid rgba(139,92,246,0.2)',
+                      boxShadow: '0 16px 48px rgba(0,0,0,0.5)',
+                    }}
+                  >
+                    <div className="px-3 py-2.5 border-b mb-1" style={{ borderColor: 'rgba(139,92,246,0.12)' }}>
+                      <p className="text-label text-xs font-semibold truncate">{user.email}</p>
+                      <p className="text-label-3 text-[11px] mt-0.5">Connecté</p>
+                    </div>
+                    <button
+                      onClick={handleSignOut}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 text-left"
+                      style={{ color: '#ff6b6b' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,69,58,0.1)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                    >
+                      <LogOut size={13} />
+                      Se déconnecter
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button onClick={handleLogin} className="btn-ghost text-xs py-2 px-3 gap-1.5">
+                <LogIn size={13} />
+                Se connecter
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Hamburger mobile */}
         <button
           onClick={() => setMenuOpen(v => !v)}
@@ -99,7 +185,7 @@ export default function Navbar() {
       {/* Menu mobile déroulant */}
       {menuOpen && (
         <div
-          className="md:hidden animate-fade-in"
+          className="md:hidden"
           style={{
             background: 'rgba(9,9,15,0.92)',
             backdropFilter: 'blur(28px)',
@@ -130,6 +216,41 @@ export default function Navbar() {
                 {label}
               </NavLink>
             ))}
+
+            <div style={{ height: 1, background: 'rgba(139,92,246,0.12)', margin: '4px 0' }} />
+
+            {/* Auth mobile */}
+            {!loading && (
+              user ? (
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2.5 px-4 py-2">
+                    <div
+                      className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                      style={{ background: 'linear-gradient(135deg,#8b5cf6,#7c3aed)' }}
+                    >
+                      {initial}
+                    </div>
+                    <span className="text-label-2 text-xs truncate">{user.email}</span>
+                  </div>
+                  <button
+                    onClick={handleSignOut}
+                    className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors"
+                    style={{ color: '#ff6b6b' }}
+                  >
+                    <LogOut size={14} />
+                    Se déconnecter
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={handleLogin}
+                  className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium text-flux-accent2 transition-colors hover:bg-white/[0.05]"
+                >
+                  <LogIn size={14} />
+                  Se connecter / S'inscrire
+                </button>
+              )
+            )}
           </div>
         </div>
       )}

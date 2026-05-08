@@ -4,11 +4,13 @@ import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import LoadingSpinner from './components/LoadingSpinner'
 import ApiKeyBanner from './components/ApiKeyBanner'
+import { AuthProvider } from './contexts/AuthContext'
 
 const Home        = lazy(() => import('./pages/Home'))
 const Discover    = lazy(() => import('./pages/Discover'))
 const Search      = lazy(() => import('./pages/Search'))
 const TitleDetail = lazy(() => import('./pages/TitleDetail'))
+const Auth        = lazy(() => import('./pages/Auth'))
 const Dmca        = lazy(() => import('./pages/Dmca'))
 const Legal       = lazy(() => import('./pages/Legal'))
 const Privacy     = lazy(() => import('./pages/Privacy'))
@@ -38,6 +40,7 @@ function Layout() {
             <Route path="/discover"  element={<Discover />} />
             <Route path="/search"    element={<Search />} />
             <Route path="/title/:id" element={<TitleDetail />} />
+            <Route path="/auth"      element={<Auth />} />
             <Route path="/dmca"      element={<Dmca />} />
             <Route path="/legal"     element={<Legal />} />
             <Route path="/privacy"   element={<Privacy />} />
@@ -53,7 +56,9 @@ function Layout() {
 export default function App() {
   return (
     <BrowserRouter>
-      <Layout />
+      <AuthProvider>
+        <Layout />
+      </AuthProvider>
     </BrowserRouter>
   )
 }

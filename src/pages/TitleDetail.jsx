@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { Star, Clock, Calendar, Heart, Play, ArrowLeft, Tv } from 'lucide-react'
+import { Star, Clock, Calendar, Heart, Play, ArrowLeft, Tv, LogIn } from 'lucide-react'
 import { getMovieDetails } from '../lib/api'
 import { imageUrl, POSTER_SIZES, BACKDROP_SIZES } from '../lib/constants'
 import VideoPlayer from '../components/VideoPlayer' 
@@ -8,6 +8,7 @@ import WatchProviders from '../components/WatchProviders'
 import MovieRow from '../components/MovieRow'
 import SeoHead from '../components/SeoHead'
 import LoadingSpinner from '../components/LoadingSpinner'
+import { useAuth } from '../contexts/AuthContext'
 
 function useFavorites() {
   const [favs, setFavs] = useState(() => {
@@ -27,6 +28,7 @@ export default function TitleDetail() {
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState(null)
   const { favs, toggle }      = useFavorites()
+  const { user }              = useAuth() // On récupère l'état de connexion
 
   useEffect(() => {
     setLoading(true); setError(null); setMovie(null)
@@ -57,6 +59,9 @@ export default function TitleDetail() {
   const similar = movie.similar?.results || []
   const backdrop = imageUrl(movie.backdrop_path, BACKDROP_SIZES.medium)
 
+  // On cherche la bande-annonce officielle dans les données TMDB
+  const trailer = movie.videos?.results?.find(v => v.type === 'Trailer' && v.site === 'YouTube')
+
   return (
     <>
       <SeoHead
@@ -82,7 +87,6 @@ export default function TitleDetail() {
         />
       </div>
 
-      {/* MODIFICATION PRINCIPALE ICI : w-full au lieu de max-w-5xl */}
       <div className="w-full px-5 md:px-12 pb-20">
         <Link
           to="/"
@@ -172,12 +176,55 @@ export default function TitleDetail() {
               </section>
             )}
 
+            {/* --- LOGIQUE CONDITIONNELLE DU LECTEUR --- */}
             <section id="player" className="scroll-mt-20">
-              <SectionTitle>Lecteur Streaming</SectionTitle>
-              <VideoPlayer 
-                tmdbId={movie.id} 
-                type={movie.number_of_seasons ? 'tv' : 'movie'} 
-              />
+              {user ? (
+                // SI CONNECTÉ : On affiche le lecteur de streaming
+                <>
+                  <SectionTitle>Lecteur Streaming</SectionTitle>
+                  <VideoPlayer 
+                    tmdbId={movie.id} 
+                    type={movie.number_of_seasons ? 'tv' : 'movie'} 
+                  />
+                </>
+              ) : (
+                // SI DÉCONNECTÉ : On affiche la bande-annonce + Invitation à se connecter
+                <>
+                  <SectionTitle>Bande-annonce officielle</SectionTitle>
+                  {trailer ? (
+                    <div className="relative pt-[56.25%] bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/5">
+                      <iframe
+                        className="absolute inset-0 w-full h-full"
+                        src={`https://www.youtube.com/embed/${trailer.key}?rel=0&showinfo=0&autoplay=0`}
+                        title="Bande-annonce"
+                        frameBorder="0"
+                        allowFullScreen
+                      ></iframe>
+                    </div>
+                  ) : (
+                    <div className="p-10 text-center bg-zinc-900 rounded-2xl border border-white/5">
+                      <p className="text-zinc-500 text-sm">Aucune bande-annonce disponible pour ce titre.</p>
+                    </div>
+                  )}
+
+                  {/* Bandeau d'incitation à la connexion */}
+                  <div className="mt-6 p-5 bg-gradient-to-r from-red-600/20 to-zinc-800/50 rounded-2xl border border-red-600/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center shadow-lg shadow-red-900/40">
+                        <Play size={18} fill="white" className="ml-1" />
+                      </div>
+                      <div>
+                        <p className="text-white font-bold text-sm">Prêt à regarder le film complet ?</p>
+                        <p className="text-zinc-400 text-[11px]">Connectez-vous pour débloquer les serveurs de streaming VF/VOSTFR.</p>
+                      </div>
+                    </div>
+                    <Link to="/login" className="btn-primary whitespace-nowrap text-xs px-6 py-2.5">
+                      <LogIn size={14} />
+                      Se connecter
+                    </Link>
+                  </div>
+                </>
+              )}
             </section>
 
             {cast.length > 0 && (
