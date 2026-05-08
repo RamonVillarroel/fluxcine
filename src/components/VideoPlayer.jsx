@@ -1,32 +1,35 @@
 import React, { useState } from 'react';
 
 export default function VideoPlayer({ tmdbId, type = 'movie', season = 1, episode = 1 }) {
-  // Liste des serveurs nettoyée et mise à jour avec des domaines stables
   const servers = [
     {
-      id: 'vidsrccc',
-      label: '🌍 Serveur 1 (Vidsrc.cc - Multi-Audio)',
-      url: type === 'movie' 
-        ? `https://vidsrc.cc/v2/embed/movie/${tmdbId}?autoPlay=false` 
-        : `https://vidsrc.cc/v2/embed/tv/${tmdbId}/${season}/${episode}?autoPlay=false`
-    },
-    {
-      id: 'vidsrcnet',
-      label: '🌍 Serveur 2 (Vidsrc.net - Très Stable)',
-      url: type === 'movie' 
-        ? `https://vidsrc.net/embed/movie?tmdb=${tmdbId}` 
-        : `https://vidsrc.net/embed/tv?tmdb=${tmdbId}&season=${season}&episode=${episode}`
-    },
-    {
       id: 'multiembed',
-      label: '🌍 Serveur 3 (Multiembed - Agrégateur)',
+      label: '🌍 Serveur 1 (Stable - Testez les paramètres Audio)',
+      // Tu as confirmé que celui-ci charge bien la vidéo. Il faut chercher la piste VF manuellement.
       url: type === 'movie' 
         ? `https://multiembed.mov/?video_id=${tmdbId}&tmdb=1` 
         : `https://multiembed.mov/?video_id=${tmdbId}&tmdb=1&s=${season}&e=${episode}`
     },
     {
+      id: 'vidsrcpm',
+      label: '🌍 Serveur 2 (Miroir Anti-Blocage A)',
+      // Miroir de Vidsrc qui échappe souvent au blocage DNS français.
+      url: type === 'movie' 
+        ? `https://vidsrc.pm/embed/movie?tmdb=${tmdbId}` 
+        : `https://vidsrc.pm/embed/tv?tmdb=${tmdbId}&season=${season}&episode=${episode}`
+    },
+    {
+      id: 'vidsrcxyz',
+      label: '🌍 Serveur 3 (Miroir Anti-Blocage B)',
+      // Un autre miroir de secours pour Vidsrc.
+      url: type === 'movie' 
+        ? `https://vidsrc.xyz/embed/movie?tmdb=${tmdbId}` 
+        : `https://vidsrc.xyz/embed/tv?tmdb=${tmdbId}&season=${season}&episode=${episode}`
+    },
+    {
       id: 'vidlink',
-      label: '🇺🇸 Serveur 4 (Vidlink - Secours Rapide)',
+      label: '🇺🇸 Serveur 4 (Secours 100% Fonctionnel - VO)',
+      // Tu as confirmé que celui-ci marche à chaque coup. Parfait pour dépanner.
       url: type === 'movie' 
         ? `https://vidlink.pro/movie/${tmdbId}?primaryColor=E50914&autoplay=false` 
         : `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}?primaryColor=E50914&autoplay=false`
@@ -70,7 +73,7 @@ export default function VideoPlayer({ tmdbId, type = 'movie', season = 1, episod
         </div>
         
         <div className="text-[10px] text-zinc-400 font-medium whitespace-nowrap bg-zinc-900/50 px-3 py-1.5 rounded-md text-center">
-          💡 RAPPEL : Cliquez sur l'icône CC ou Paramètres (Audio) dans la vidéo pour chercher la VF.
+          ⚠️ Note : Si aucune option "Français" n'est disponible dans les paramètres du lecteur (Audio/CC), c'est que le fichier est uniquement en VO.
         </div>
       </div>
 
