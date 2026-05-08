@@ -5,21 +5,21 @@ import { getTrending } from '../lib/api'
 import { imageUrl, BACKDROP_SIZES, POSTER_SIZES } from '../lib/constants'
 
 export default function Hero() {
-  const [movies, setMovies]     = useState([])
-  const [current, setCurrent]   = useState(0)
-  const [paused, setPaused]     = useState(false)
-  const [loading, setLoading]   = useState(true)
-  const [visible, setVisible]   = useState(true)
+  const [movies, setMovies]   = useState([])
+  const [current, setCurrent] = useState(0)
+  const [paused, setPaused]   = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [visible, setVisible] = useState(true)
 
   useEffect(() => {
     getTrending('day')
-      .then(d => { setMovies((d.results||[]).slice(0,5)); setLoading(false) })
+      .then(d => { setMovies((d.results || []).slice(0, 5)); setLoading(false) })
       .catch(() => setLoading(false))
   }, [])
 
-  const goTo = useCallback((idx) => {
+  const goTo = useCallback(idx => {
     setVisible(false)
-    setTimeout(() => { setCurrent(idx); setVisible(true) }, 260)
+    setTimeout(() => { setCurrent(idx); setVisible(true) }, 240)
   }, [])
 
   const next = useCallback(() => goTo((current + 1) % movies.length), [current, movies.length, goTo])
@@ -30,12 +30,12 @@ export default function Hero() {
     return () => clearInterval(id)
   }, [paused, movies.length, next])
 
-  if (loading) {
-    return (
-      <div className="w-full rounded-3xl overflow-hidden animate-pulse"
-        style={{ height: 'min(85vh, 700px)', background: '#1c1c1e' }} />
-    )
-  }
+  if (loading) return (
+    <div
+      className="w-full rounded-3xl overflow-hidden animate-pulse"
+      style={{ height: 'min(82vh, 700px)', background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.1)' }}
+    />
+  )
   if (!movies.length) return null
 
   const m     = movies[current]
@@ -46,65 +46,58 @@ export default function Hero() {
   return (
     <div
       className="relative w-full overflow-hidden rounded-3xl"
-      style={{ height: 'min(85vh, 720px)' }}
+      style={{ height: 'min(82vh, 700px)' }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* Backdrops superposés */}
+      {/* Backdrops */}
       {movies.map((mv, i) => (
-        <div
-          key={mv.id}
-          className="absolute inset-0 transition-opacity duration-700"
-          style={{ opacity: i === current ? 1 : 0 }}
-        >
-          <img
-            src={imageUrl(mv.backdrop_path, BACKDROP_SIZES.medium)}
-            alt=""
-            className="w-full h-full object-cover"
-            aria-hidden="true"
-          />
+        <div key={mv.id} className="absolute inset-0 transition-opacity duration-700" style={{ opacity: i === current ? 1 : 0 }}>
+          <img src={imageUrl(mv.backdrop_path, BACKDROP_SIZES.medium)} alt="" className="w-full h-full object-cover" aria-hidden />
         </div>
       ))}
 
-      {/* Gradients Apple TV+ : chaud en bas, léger sur les côtés */}
-      <div className="absolute inset-0"
-        style={{ background: 'linear-gradient(to top, #000 0%, rgba(0,0,0,0.65) 35%, rgba(0,0,0,0.1) 70%, transparent 100%)' }} />
-      <div className="absolute inset-0"
-        style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.6) 0%, transparent 55%)' }} />
+      {/* Dégradés de fondu */}
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, #09090f 0%, rgba(9,9,15,0.6) 40%, rgba(9,9,15,0.1) 70%, transparent 100%)' }} />
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(9,9,15,0.75) 0%, rgba(9,9,15,0.2) 50%, transparent 100%)' }} />
+      {/* Teinte violet sur les bords */}
+      <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 0% 100%, rgba(109,40,217,0.15) 0%, transparent 60%)' }} />
 
       {/* Contenu */}
       <div className="absolute inset-0 flex flex-col justify-end px-8 md:px-14 pb-12 md:pb-16">
         <div
-          className="max-w-2xl"
           style={{
+            maxWidth: 560,
             opacity: visible ? 1 : 0,
-            transform: visible ? 'translateY(0)' : 'translateY(8px)',
+            transform: visible ? 'translateY(0)' : 'translateY(10px)',
             transition: 'opacity 0.3s ease, transform 0.3s ease',
           }}
         >
-          {/* Genre / score */}
+          {/* Score + année */}
           <div className="flex items-center gap-3 mb-4">
             {score && (
-              <span className="flex items-center gap-1 text-yellow-400 text-xs font-semibold"
-                style={{ background: 'rgba(255,214,0,0.12)', border: '1px solid rgba(255,214,0,0.2)', padding: '3px 10px', borderRadius: 99 }}>
+              <span
+                className="inline-flex items-center gap-1.5 text-yellow-300 text-xs font-bold"
+                style={{ background: 'rgba(253,224,71,0.12)', border: '1px solid rgba(253,224,71,0.2)', padding: '3px 10px', borderRadius: 99 }}
+              >
                 <Star size={10} fill="currentColor" />
                 {score}
               </span>
             )}
-            {year && <span className="text-label-2 text-xs font-medium">{year}</span>}
+            {year && <span className="text-label-2 text-xs font-medium tracking-wide">{year}</span>}
           </div>
 
           {/* Titre */}
           <h1
-            className="text-label font-bold mb-4 leading-[1.02]"
-            style={{ fontSize: 'clamp(2.2rem, 5vw, 3.8rem)', letterSpacing: '-0.04em' }}
+            className="text-label font-black leading-[1.02] mb-4"
+            style={{ fontSize: 'clamp(2rem, 5vw, 3.6rem)', letterSpacing: '-0.04em' }}
           >
             {title}
           </h1>
 
           {/* Overview */}
           {m.overview && (
-            <p className="text-label-2 text-[15px] leading-relaxed line-clamp-2 mb-7 max-w-lg">
+            <p className="text-label-2 leading-relaxed line-clamp-2 mb-7" style={{ fontSize: 'clamp(13px, 1.5vw, 15px)' }}>
               {m.overview}
             </p>
           )}
@@ -112,19 +105,18 @@ export default function Hero() {
           {/* Actions */}
           <div className="flex gap-3 flex-wrap">
             <Link to={`/title/${m.id}`} className="btn-primary">
-              <Play size={15} fill="currentColor" />
+              <Play size={14} fill="currentColor" />
               Voir la fiche
             </Link>
             <Link to={`/title/${m.id}`} className="btn-ghost">
-              <Info size={15} />
-              Plus d'infos
+              <Info size={14} />
+              Détails
             </Link>
           </div>
         </div>
 
-        {/* Sélecteur — petits posters + dots */}
-        <div className="flex items-center gap-5 mt-8">
-          {/* Dots */}
+        {/* Sélecteur dots + mini posters */}
+        <div className="flex items-center gap-4 mt-8">
           <div className="flex gap-1.5">
             {movies.map((_, i) => (
               <button
@@ -134,35 +126,33 @@ export default function Hero() {
                 className="transition-all duration-300"
                 style={{
                   height: 3,
-                  width: i === current ? 24 : 12,
+                  width: i === current ? 28 : 10,
                   borderRadius: 99,
-                  background: i === current ? '#00d4ff' : 'rgba(255,255,255,0.25)',
+                  background: i === current
+                    ? 'linear-gradient(90deg,#8b5cf6,#a78bfa)'
+                    : 'rgba(255,255,255,0.2)',
                 }}
               />
             ))}
           </div>
 
-          {/* Mini posters desktop */}
-          <div className="hidden md:flex gap-2">
+          <div className="hidden md:flex gap-2 ml-3">
             {movies.map((mv, i) => (
               <button
                 key={mv.id}
                 onClick={() => goTo(i)}
                 aria-label={mv.title || mv.name}
-                className="transition-all duration-300 overflow-hidden rounded-[8px] flex-shrink-0"
+                className="overflow-hidden rounded-[8px] flex-shrink-0 transition-all duration-300"
                 style={{
-                  width: 40, height: 56,
-                  opacity: i === current ? 1 : 0.38,
-                  outline: i === current ? '2px solid #00d4ff' : 'none',
+                  width: 38, height: 54,
+                  opacity: i === current ? 1 : 0.35,
+                  outline: i === current ? '2px solid #8b5cf6' : 'none',
                   outlineOffset: 2,
-                  transform: i === current ? 'scale(1.05)' : 'scale(1)',
+                  transform: i === current ? 'scale(1.08)' : 'scale(1)',
+                  boxShadow: i === current ? '0 0 12px rgba(139,92,246,0.5)' : 'none',
                 }}
               >
-                <img
-                  src={imageUrl(mv.poster_path, POSTER_SIZES.small)}
-                  alt=""
-                  className="w-full h-full object-cover"
-                />
+                <img src={imageUrl(mv.poster_path, POSTER_SIZES.small)} alt="" className="w-full h-full object-cover" />
               </button>
             ))}
           </div>

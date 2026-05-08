@@ -13,22 +13,30 @@ function MiniCard({ movie }) {
     <Link
       to={`/title/${movie.id}`}
       className="group flex-shrink-0 block"
-      style={{ width: 'clamp(128px, 14vw, 168px)' }}
+      style={{ width: 'clamp(120px, 13vw, 156px)' }}
       aria-label={`Voir ${title}`}
     >
       <div
-        className="relative aspect-[2/3] rounded-2xl overflow-hidden mb-2.5 transition-transform duration-500 group-hover:scale-[1.04]"
-        style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}
+        className="relative aspect-[2/3] rounded-2xl overflow-hidden mb-2.5 transition-all duration-500 group-hover:-translate-y-2"
+        style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.5)', border: '1px solid rgba(139,92,246,0.1)' }}
       >
         <img
           src={imageUrl(movie.poster_path, POSTER_SIZES.medium)}
           alt={`Affiche de ${title}`}
           loading="lazy"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.06]"
+        />
+        <div
+          className="absolute inset-0 transition-opacity duration-300 opacity-0 group-hover:opacity-100"
+          style={{ background: 'linear-gradient(to top, rgba(9,9,15,0.88) 0%, transparent 50%)' }}
+        />
+        <div
+          className="absolute inset-0 rounded-2xl transition-opacity duration-500 opacity-0 group-hover:opacity-100 pointer-events-none"
+          style={{ boxShadow: 'inset 0 0 0 1px rgba(139,92,246,0.4)' }}
         />
         {rating && (
           <div
-            className="absolute top-2 right-2 flex items-center gap-1 text-[10px] font-semibold text-yellow-400"
+            className="absolute top-2 right-2 flex items-center gap-0.5 text-[10px] font-bold text-yellow-300"
             style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(8px)', padding: '2px 6px', borderRadius: 99 }}
           >
             <Star size={8} fill="currentColor" />
@@ -36,8 +44,10 @@ function MiniCard({ movie }) {
           </div>
         )}
       </div>
-      <p className="text-label text-[12px] font-semibold leading-tight line-clamp-1 px-0.5"
-        style={{ letterSpacing: '-0.01em' }}>
+      <p
+        className="text-label text-[12px] font-semibold leading-tight line-clamp-1 px-0.5"
+        style={{ letterSpacing: '-0.01em' }}
+      >
         {title}
       </p>
       {year && <p className="text-label-3 text-[11px] font-medium px-0.5 mt-0.5">{year}</p>}
@@ -63,46 +73,43 @@ export default function MovieRow({ title, movies = [], loading = false }) {
     setShowRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4)
   }
 
+  const ArrowBtn = ({ dir }) => (
+    <button
+      onClick={() => scroll(dir)}
+      className="absolute top-1/2 z-10 w-9 h-9 rounded-full flex items-center justify-center text-label-2 hover:text-label transition-all opacity-0 group-hover/row:opacity-100 duration-200 hover:scale-105"
+      style={{
+        [dir === 'left' ? 'left' : 'right']: -18,
+        transform: 'translateY(-50%)',
+        background: 'rgba(15,14,26,0.9)',
+        backdropFilter: 'blur(12px)',
+        border: '1px solid rgba(139,92,246,0.25)',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+      }}
+      aria-label={dir === 'left' ? 'Défiler à gauche' : 'Défiler à droite'}
+    >
+      {dir === 'left' ? <ChevronLeft size={17} /> : <ChevronRight size={17} />}
+    </button>
+  )
+
   return (
     <section className="relative group/row">
-      {/* En-tête section — style Apple TV */}
+      {/* En-tête */}
       <div className="flex items-baseline justify-between mb-5">
-        <h2 className="section-title">{title}</h2>
+        <div className="flex items-center gap-3">
+          {/* Accent bar violet dégradé */}
+          <div className="w-1 h-5 rounded-full flex-shrink-0" style={{ background: 'linear-gradient(to bottom,#8b5cf6,#6d28d9)' }} />
+          <h2 className="section-title">{title}</h2>
+        </div>
         {!loading && movies.length > 0 && (
-          <Link
-            to="/discover"
-            className="text-flux-accent text-sm font-medium hover:opacity-70 transition-opacity flex-shrink-0 ml-4"
-          >
+          <Link to="/discover" className="text-flux-accent2 text-xs font-semibold hover:opacity-70 transition-opacity flex-shrink-0 ml-4">
             Voir tout
           </Link>
         )}
       </div>
 
-      {/* Flèche gauche */}
-      {showLeft && (
-        <button
-          onClick={() => scroll('left')}
-          className="absolute -left-5 top-1/2 translate-y-1 z-10 w-10 h-10 rounded-full flex items-center justify-center text-label-2 hover:text-label transition-all opacity-0 group-hover/row:opacity-100 duration-200"
-          style={{ background: 'rgba(28,28,30,0.9)', backdropFilter: 'blur(12px)', boxShadow: '0 4px 16px rgba(0,0,0,0.6)' }}
-          aria-label="Défiler à gauche"
-        >
-          <ChevronLeft size={18} />
-        </button>
-      )}
+      {showLeft && <ArrowBtn dir="left" />}
+      {showRight && <ArrowBtn dir="right" />}
 
-      {/* Flèche droite */}
-      {showRight && (
-        <button
-          onClick={() => scroll('right')}
-          className="absolute -right-5 top-1/2 translate-y-1 z-10 w-10 h-10 rounded-full flex items-center justify-center text-label-2 hover:text-label transition-all opacity-0 group-hover/row:opacity-100 duration-200"
-          style={{ background: 'rgba(28,28,30,0.9)', backdropFilter: 'blur(12px)', boxShadow: '0 4px 16px rgba(0,0,0,0.6)' }}
-          aria-label="Défiler à droite"
-        >
-          <ChevronRight size={18} />
-        </button>
-      )}
-
-      {/* Scroll horizontal */}
       <div
         ref={rowRef}
         onScroll={onScroll}
@@ -110,7 +117,7 @@ export default function MovieRow({ title, movies = [], loading = false }) {
       >
         {loading
           ? Array.from({ length: 10 }, (_, i) => (
-              <div key={i} className="flex-shrink-0" style={{ width: 'clamp(128px, 14vw, 168px)' }}>
+              <div key={i} className="flex-shrink-0" style={{ width: 'clamp(120px,13vw,156px)' }}>
                 <MovieCardSkeleton />
               </div>
             ))

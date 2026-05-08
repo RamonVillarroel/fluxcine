@@ -6,79 +6,68 @@ import SeoHead from '../components/SeoHead'
 import { searchMulti } from '../lib/api'
 
 const TABS = [
-  { key: 'all', label: 'Tout' },
+  { key: 'all',   label: 'Tout' },
   { key: 'movie', label: 'Films' },
-  { key: 'tv', label: 'Séries' },
+  { key: 'tv',    label: 'Séries' },
 ]
 
 export default function Search() {
-  const [searchParams] = useSearchParams()
-  const query = searchParams.get('q') || ''
+  const [searchParams]        = useSearchParams()
+  const query                 = searchParams.get('q') || ''
   const [results, setResults] = useState([])
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
-  const [activeTab, setActiveTab] = useState('all')
+  const [error, setError]     = useState(null)
+  const [tab, setTab]         = useState('all')
 
   useEffect(() => {
-    if (!query.trim()) {
-      setResults([])
-      return
-    }
-    setLoading(true)
-    setError(null)
+    if (!query.trim()) { setResults([]); return }
+    setLoading(true); setError(null)
     searchMulti(query)
-      .then((data) => {
-        setResults((data.results || []).filter((r) => r.media_type !== 'person'))
-        setLoading(false)
-      })
-      .catch((err) => {
-        setError(err.message)
-        setLoading(false)
-      })
+      .then(d => { setResults((d.results||[]).filter(r => r.media_type !== 'person')); setLoading(false) })
+      .catch(e => { setError(e.message); setLoading(false) })
   }, [query])
 
-  const filtered = results.filter((r) => {
-    if (activeTab === 'all') return true
-    return r.media_type === activeTab
-  })
+  const filtered = results.filter(r => tab === 'all' || r.media_type === tab)
 
   return (
     <>
       <SeoHead
-        title={query ? `"${query}" — Recherche FluxCine` : 'Recherche — FluxCine'}
-        description={`Résultats de recherche pour "${query}" sur FluxCine.`}
+        title={query ? `"${query}" — FluxCine` : 'Recherche — FluxCine'}
+        description={`Résultats pour "${query}" sur FluxCine.`}
       />
 
-      <div className="max-w-7xl mx-auto px-4 md:px-6 pb-16 pt-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-flux-text mb-2">
-          {query ? (
-            <>Résultats pour <span className="text-flux-accent">"{query}"</span></>
-          ) : (
-            'Recherche'
-          )}
+      <div className="max-w-7xl mx-auto px-5 md:px-8 pb-24 pt-8">
+
+        <h1 className="large-title mb-1" style={{ fontSize: 'clamp(1.7rem,3vw,2.4rem)' }}>
+          {query
+            ? <>Résultats pour <span className="text-gradient">"{query}"</span></>
+            : 'Recherche'
+          }
         </h1>
 
         {results.length > 0 && (
-          <p className="text-flux-muted text-sm mb-6">{results.length} résultat{results.length > 1 ? 's' : ''} trouvé{results.length > 1 ? 's' : ''}</p>
+          <p className="text-label-3 text-sm mb-6">{results.length} résultat{results.length > 1 ? 's' : ''}</p>
         )}
 
         {/* Onglets */}
         {results.length > 0 && (
-          <div className="flex gap-2 mb-6 border-b border-flux-border">
-            {TABS.map((tab) => {
-              const count = tab.key === 'all' ? results.length : results.filter((r) => r.media_type === tab.key).length
+          <div
+            className="flex gap-1 mb-8 p-1 rounded-2xl w-fit"
+            style={{ background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.15)' }}
+          >
+            {TABS.map(t => {
+              const count = t.key === 'all' ? results.length : results.filter(r => r.media_type === t.key).length
               return (
                 <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
-                    activeTab === tab.key
-                      ? 'border-flux-accent text-flux-accent'
-                      : 'border-transparent text-flux-muted hover:text-flux-text'
-                  }`}
+                  key={t.key}
+                  onClick={() => setTab(t.key)}
+                  className="px-4 py-1.5 rounded-xl text-sm font-semibold transition-all duration-200"
+                  style={tab === t.key
+                    ? { background: 'linear-gradient(135deg,#8b5cf6,#7c3aed)', color: '#fff', boxShadow: '0 0 16px rgba(139,92,246,0.4)' }
+                    : { color: 'rgba(196,181,253,0.6)', background: 'transparent' }
+                  }
                 >
-                  {tab.label}
-                  <span className="ml-1 text-xs">({count})</span>
+                  {t.label} <span className="opacity-60 text-xs ml-0.5">({count})</span>
                 </button>
               )
             })}
@@ -86,25 +75,25 @@ export default function Search() {
         )}
 
         {error && (
-          <div className="bg-red-900/20 border border-red-800 rounded-xl p-4 text-red-400 text-sm mb-6">
+          <div className="rounded-2xl p-4 text-sm mb-6" style={{ background: 'rgba(255,69,58,0.1)', border: '1px solid rgba(255,69,58,0.2)', color: '#ff6b6b' }}>
             Erreur : {error}
           </div>
         )}
 
         {!loading && !error && query && filtered.length === 0 && (
           <div className="flex flex-col items-center py-20 text-center">
-            <SearchX size={48} className="text-flux-muted mb-4" />
-            <p className="text-flux-text text-lg font-semibold mb-2">Aucun résultat</p>
-            <p className="text-flux-muted text-sm">
-              Aucun résultat pour <span className="text-flux-accent">"{query}"</span>.
-              Essayez un autre titre ou vérifiez l'orthographe.
+            <SearchX size={44} className="text-label-3 mb-4" />
+            <p className="text-label text-lg font-bold mb-2" style={{ letterSpacing: '-0.02em' }}>Aucun résultat</p>
+            <p className="text-label-2 text-sm max-w-sm">
+              Aucun résultat pour <span className="text-flux-accent2">"{query}"</span>.<br />
+              Vérifie l'orthographe ou essaie un autre titre.
             </p>
           </div>
         )}
 
         {!query && !loading && (
-          <div className="text-center py-20">
-            <p className="text-flux-muted text-lg">Utilisez la barre de recherche pour trouver un film ou une série.</p>
+          <div className="text-center py-24">
+            <p className="text-label-2 text-base">Utilise la barre de recherche pour trouver un film ou une série.</p>
           </div>
         )}
 

@@ -6,19 +6,18 @@ import { imageUrl, POSTER_SIZES } from '../lib/constants'
 import { useDebounce } from '../hooks/useDebounce'
 
 export default function SearchBar({ onClose }) {
-  const [query, setQuery]           = useState('')
+  const [query, setQuery]             = useState('')
   const [suggestions, setSuggestions] = useState([])
-  const [open, setOpen]             = useState(false)
-  const debouncedQuery              = useDebounce(query, 380)
-  const navigate                    = useNavigate()
-  const inputRef                    = useRef(null)
-  const containerRef                = useRef(null)
+  const [open, setOpen]               = useState(false)
+  const debouncedQuery                = useDebounce(query, 380)
+  const navigate                      = useNavigate()
+  const containerRef                  = useRef(null)
 
   useEffect(() => {
     if (debouncedQuery.trim().length < 2) { setSuggestions([]); setOpen(false); return }
     searchMulti(debouncedQuery)
-      .then(data => {
-        const r = (data.results||[]).filter(r => r.media_type !== 'person' && r.poster_path).slice(0,5)
+      .then(d => {
+        const r = (d.results || []).filter(r => r.media_type !== 'person' && r.poster_path).slice(0, 5)
         setSuggestions(r); setOpen(true)
       }).catch(() => {})
   }, [debouncedQuery])
@@ -40,13 +39,12 @@ export default function SearchBar({ onClose }) {
       <form onSubmit={submit} className="relative">
         <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-label-3 pointer-events-none" aria-hidden />
         <input
-          ref={inputRef}
           type="search"
           value={query}
           onChange={e => setQuery(e.target.value)}
-          placeholder="Rechercher…"
-          className="input-apple pl-8 pr-8"
-          aria-label="Rechercher un film"
+          placeholder="Rechercher un film…"
+          className="input-apple pl-8 pr-8 w-full"
+          aria-label="Rechercher"
           autoComplete="off"
         />
         {query && (
@@ -61,16 +59,16 @@ export default function SearchBar({ onClose }) {
         )}
       </form>
 
-      {/* Dropdown Spotlight */}
+      {/* Dropdown */}
       {open && suggestions.length > 0 && (
         <div
-          className="absolute top-full left-0 right-0 mt-1.5 overflow-hidden animate-scale-in z-50 rounded-2xl"
+          className="absolute top-full left-0 right-0 mt-2 rounded-2xl overflow-hidden z-50 animate-scale-in"
           style={{
-            background: 'rgba(28,28,30,0.92)',
-            backdropFilter: 'saturate(180%) blur(28px)',
-            WebkitBackdropFilter: 'saturate(180%) blur(28px)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            boxShadow: '0 16px 48px rgba(0,0,0,0.8)',
+            background: 'rgba(15,14,26,0.95)',
+            backdropFilter: 'blur(28px)',
+            WebkitBackdropFilter: 'blur(28px)',
+            border: '1px solid rgba(139,92,246,0.2)',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.7), 0 0 40px rgba(139,92,246,0.1)',
           }}
         >
           {suggestions.map((mv, idx) => {
@@ -80,13 +78,14 @@ export default function SearchBar({ onClose }) {
               <button
                 key={mv.id}
                 onClick={() => select(mv)}
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-white/[0.06]"
-                style={{ borderBottom: idx < suggestions.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-flux-accent/10"
+                style={{ borderBottom: idx < suggestions.length - 1 ? '1px solid rgba(139,92,246,0.08)' : 'none' }}
               >
                 <img
                   src={imageUrl(mv.poster_path, POSTER_SIZES.small)}
                   alt=""
-                  className="w-8 h-11 object-cover rounded-[6px] flex-shrink-0"
+                  className="w-8 h-11 object-cover rounded-lg flex-shrink-0"
+                  style={{ border: '1px solid rgba(139,92,246,0.15)' }}
                 />
                 <div className="min-w-0 flex-1">
                   <p className="text-label text-[13px] font-medium truncate" style={{ letterSpacing: '-0.01em' }}>{title}</p>
